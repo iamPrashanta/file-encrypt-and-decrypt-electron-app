@@ -1,0 +1,34 @@
+{
+  "name": "file-encrypter-decrypter",
+  "version": "1.0.0",
+  "description": "An app to encrypt and decrypt files.",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder"
+  },
+  "keywords": [],
+  "author": "Prashanta Mondal",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^25.0.0",
+    "electron-builder": "^24.6.3"
+  },
+  "build": {
+    "appId": "com.example.file-encrypter-decrypter",
+    "win": {
+      "target": "portable"
+    },
+    "portable": {
+      "splashImage": null
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iamPrashanta/file-encrypt-and-decrypt-electron-app.git"
+  },
+  "bugs": {
+    "url": "https://github.com/iamPrashanta/file-encrypt-and-decrypt-electron-app/issues"
+  },
+  "homepage": "https://github.com/iamPrashanta/file-encrypt-and-decrypt-electron-app#readme"
+}
