@@ -16,11 +16,16 @@
   },
   "build": {
     "appId": "com.example.file-encrypter-decrypter",
+    "productName": "File Encrypter Decrypter",
     "win": {
-      "target": "portable"
+      "target": "nsis",
+      "icon": "build/icon.png"
     },
-    "portable": {
-      "splashImage": null
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "include": "build/installer.nsh",
+      "warningsAsErrors": false
     }
   },
   "repository": {
@@ -30,5 +35,8 @@
   "bugs": {
     "url": "https://github.com/iamPrashanta/file-encrypt-and-decrypt-electron-app/issues"
   },
-  "homepage": "https://github.com/iamPrashanta/file-encrypt-and-decrypt-electron-app#readme"
+  "homepage": "https://github.com/iamPrashanta/file-encrypt-and-decrypt-electron-app#readme",
+  "dependencies": {
+    "ini": "^5.0.0"
+  }
 }

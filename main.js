@@ -1,7 +1,41 @@
-const { app, BrowserWindow, ipcMain, dialog } = require("electron");
+const { app, BrowserWindow, ipcMain, dialog, shell } = require("electron");
 const path = require("path");
 const fs = require("fs");
 const crypto = require("crypto");
+const ini = require('ini'); 
+
+function getUniqueFilePath(savePath) {
+  // Returns a unique filename if a file already exists
+  let base = path.basename(savePath, path.extname(savePath));
+  let ext = path.extname(savePath);
+  let dir = path.dirname(savePath);
+  let counter = 1;
+  let candidate = savePath;
+  while (fs.existsSync(candidate)) {
+    candidate = path.join(dir, `${base}_${counter}${ext}`);
+    counter++;
+  }
+  return candidate;
+}
+
+function getDownloadPath() {
+  const isDev = !app.isPackaged;
+  const configPath = path.join(isDev ? '.' : process.resourcesPath, '../..', 'config.ini');
+
+  if (fs.existsSync(configPath)) {
+    try {
+      const config = ini.parse(fs.readFileSync(configPath, 'utf-8'));
+      if (config.Settings && config.Settings.downloadPath) {
+        return config.Settings.downloadPath;
+      }
+    } catch (e) {
+      console.error("Could not read config.ini:", e);
+    }
+  }
+  
+  // Fallback to default downloads path
+  return app.getPath("downloads");
+}
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -54,7 +88,7 @@ ipcMain.handle("encrypt-file", async (event, { filePath, encryptionKey }) => {
     const finalPayload = Buffer.concat([iv, encrypted]);
 
     // Save with .enc extension
-    const downloadsPath = app.getPath("downloads");
+    const downloadsPath = getDownloadPath();
     const savePath = path.join(downloadsPath, path.basename(filePath) + ".enc");
 
     fs.writeFileSync(savePath, finalPayload);
@@ -90,17 +124,14 @@ ipcMain.handle("decrypt-file", async (event, { filePath, decryptionKey }) => {
     plaintext = Buffer.concat([plaintext, decipher.final()]);
 
     const originalFilename = path.basename(filePath, ".enc");
-    const downloadsPath = app.getPath("downloads");
-    const savePath = path.join(downloadsPath, originalFilename);
+    const downloadsPath = getDownloadPath();
+    let savePath = path.join(downloadsPath, originalFilename);
 
-    // save this fine
+    // Ensure no overwrite
+    savePath = getUniqueFilePath(savePath);
     fs.writeFileSync(savePath, plaintext);
 
-    dialog.showMessageBox({
-      type: "info",
-      title: "Success",
-      message: `File decrypted and saved to: ${savePath}`,
-    });
+    shell.openPath(savePath);
 
     return { success: true, path: savePath };
   } catch (error) {
