@@ -29,7 +29,7 @@ function getDownloadPath() {
         return config.Settings.downloadPath;
       }
     } catch (e) {
-      console.error("Could not read config.ini:", e);
+      // console.error("Could not read config.ini:", e);
     }
   }
   
@@ -101,7 +101,7 @@ ipcMain.handle("encrypt-file", async (event, { filePath, encryptionKey }) => {
 
     return { success: true, path: savePath };
   } catch (error) {
-    console.error("Encryption failed:", error);
+    // console.error("Encryption failed:", error);
     dialog.showMessageBox({
       type: "error",
       title: "Encryption Failed",
@@ -135,7 +135,7 @@ ipcMain.handle("decrypt-file", async (event, { filePath, decryptionKey }) => {
 
     return { success: true, path: savePath };
   } catch (error) {
-    console.error("Decryption failed:", error);
+    // console.error("Decryption failed:", error);
     dialog.showMessageBox({
       type: "error",
       title: "Decryption Failed",

@@ -1,50 +1,188 @@
-<!DOCTYPE html>
-<html>
 <head>
     <meta charset="UTF-8">
-    <title>File Utility</title>
+    <title>File Guardian</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; padding: 20px; margin: 0; }
-        .app-header { display: flex; justify-content: space-between; align-items: center; }
-        .container { max-width: 500px; margin: auto; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; }
-        input[type="text"], input[type="file"] { width: 100%; padding: 8px; box-sizing: border-box; }
-        button { padding: 10px 15px; cursor: pointer; }
-        #toggle-button { background-color: #6c757d; color: white; border: none; }
-        .loader {
-            display: none; /* Hidden by default */
-            border: 8px solid #f3f3f3;
-            border-top: 8px solid #3498db;
+        /* Global Styles & Font */
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+        
+        :root {
+            --bg-color: #1a1a2e;
+            --surface-color: #16213e;
+            --primary-color: #0f3460;
+            --accent-color: #e94560;
+            --glow-color: #53a8b6;
+            --text-color: #dcdcdc;
+            --border-color: rgba(83, 168, 182, 0.5);
+        }
+
+        body.light-theme {
+            --bg-color: #f0f2f5;
+            --surface-color: #ffffff;
+            --primary-color: #4a6fa5;
+            --accent-color: #d64045;
+            --glow-color: #1e88e5;
+            --text-color: #1c1e21;
+            --border-color: rgba(74, 111, 165, 0.5);
+        }
+        
+        body {
+            font-family: 'Orbitron', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* Main Container */
+        .container {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            padding: 40px;
+            width: 550px;
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.4), 0 0 15px var(--glow-color) inset;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .app-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        #app-title {
+            font-size: 2em;
+            color: var(--accent-color);
+            text-shadow: 0 0 10px var(--accent-color);
+            margin: 0;
+            flex-grow: 1; /* Allow title to take up space */
+        }
+
+        /* Header controls container */
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 20px; /* Space between buttons */
+        }
+
+        /* NEW: Mode Toggle Icon Button */
+        #toggle-mode-button {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            transition: all 0.3s ease;
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        #toggle-mode-button:hover {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+            box-shadow: 0 0 10px var(--accent-color);
+            transform: rotate(90deg);
         }
+        #toggle-mode-button svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+
+        /* Form Elements */
+        .form-group { margin-bottom: 25px; }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        input[type="text"] {
+            width: 100%; padding: 12px; box-sizing: border-box; background-color: var(--bg-color);
+            border: 1px solid var(--border-color); border-radius: 5px; color: var(--text-color);
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        /* File Input Custom Styling */
+        input[type="file"] { display: none; }
+        .file-input-label {
+            background-color: var(--primary-color); border: 1px dashed var(--border-color); border-radius: 5px;
+            padding: 20px; text-align: center; cursor: pointer; transition: background-color 0.3s, box-shadow 0.3s;
+        }
+        .file-input-label:hover { background-color: var(--accent-color); box-shadow: 0 0 15px var(--accent-color); }
+        #file-name { font-size: 0.8em; margin-top: 10px; }
+
+        /* Main Action Button with Animation */
+        #action-button {
+            width: 100%; padding: 15px; font-family: 'Orbitron', sans-serif; font-size: 1.2em;
+            color: white; background-color: var(--accent-color); border: none; border-radius: 5px;
+            cursor: pointer; position: relative; overflow: hidden; transition: background-color 0.3s;
+        }
+        #action-button::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 0; height: 100%;
+            background-color: var(--glow-color); transition: width 0.5s ease-in-out;
+        }
+        #action-button.loading::before { width: 100%; }
+        #action-button.success::before { background-color: #28a745; width: 100%; }
+        #action-button.failed::before { background-color: #dc3545; width: 100%; }
+        #action-button span { position: relative; z-index: 1; }
+        
+        /* Theme Toggle Switch */
+        .theme-switch { display: inline-block; height: 24px; position: relative; width: 50px; }
+        .theme-switch input { display: none; }
+        .slider {
+            background-color: var(--primary-color); bottom: 0; cursor: pointer; left: 0;
+            position: absolute; right: 0; top: 0; transition: .4s; border-radius: 34px;
+        }
+        .slider:before {
+            background-color: var(--glow-color); bottom: 4px; content: ""; height: 16px;
+            left: 4px; position: absolute; transition: .4s; width: 16px; border-radius: 50%;
+        }
+        input:checked + .slider { background-color: var(--accent-color); }
+        input:checked + .slider:before { transform: translateX(26px); }
+
     </style>
 </head>
 <body>
     <div class="container">
         <div class="app-header">
             <h1 id="app-title">File Decrypter</h1>
-            <button id="toggle-button">Switch to Encrypt</button>
+            <div class="header-controls">
+                <!-- THIS IS THE NEW VISIBLE TOGGLE BUTTON -->
+                <button id="toggle-mode-button" title="Switch Mode">
+                    <svg viewBox="0 0 24 24"><path d="M16.89,15.5H7.11a4.11,4.11,0,0,1,0-8.22h9.78a4.11,4.11,0,0,1,0,8.22Zm-9.78-6.22a2.11,2.11,0,0,0,0,4.22h9.78a2.11,2.11,0,0,0,0-4.22Z"></path><path d="M7.11,13.39a2,2,0,1,1,2-2A2,2,0,0,1,7.11,13.39Zm0-2.05a.05.05,0,1,0,0,0Z"></path><path d="M16.89,13.39a2,2,0,1,1,2-2A2,2,0,0,1,16.89,13.39Zm0-2.05a.05.05,0,1,0,0,0Z"></path></svg>
+                </button>
+                <label class="theme-switch">
+                  <input type="checkbox" id="theme-slider">
+                  <span class="slider"></span>
+                </label>
+            </div>
         </div>
         
         <div class="form-group">
-            <label for="filePicker" id="file-label">Choose a .enc file:</label>
+            <label for="filePicker" class="file-input-label">
+                <span id="file-label-text">Choose a .enc file</span>
+                <div id="file-name">No file selected</div>
+            </label>
             <input type="file" id="filePicker" accept=".enc">
         </div>
         <div class="form-group">
             <label for="keyInput" id="key-label">Decryption Key:</label>
-            <input type="text" id="keyInput">
+            <input type="text" id="keyInput" placeholder="Enter secret key...">
         </div>
-        <button id="action-button">Decrypt File</button>
-        <div class="loader" id="loader"></div>
+        
+        <button id="action-button"><span>Decrypt File</span></button>
     </div>
     <script src="./renderer.js"></script>
 </body>
